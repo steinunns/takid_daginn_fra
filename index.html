@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Save the Date</title>
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #000;
+    }
+
+    body {
+      min-height: 100dvh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #fff;
+    }
+
+    .page {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      min-height: 100svh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .video-shell {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .sound-button,
+    .play-button,
+    .form-button {
+      -webkit-tap-highlight-color: transparent;
+      border: 0;
+      text-decoration: none;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .sound-button {
+      position: absolute;
+      z-index: 5;
+      top: calc(var(--safe-top) + 14px);
+      right: calc(var(--safe-right) + 14px);
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.30);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .35s ease, transform .35s ease;
+    }
+
+    .sound-button.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .play-wrap {
+      position: absolute;
+      z-index: 6;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    .play-wrap.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .play-button {
+      width: 84px;
+      height: 84px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #111;
+      background: rgba(255, 255, 255, 0.93);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.28);
+      font-size: 34px;
+      line-height: 1;
+      padding: 0 0 2px 5px;
+    }
+
+    .final-overlay {
+      position: absolute;
+      z-index: 7;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding:
+        24px
+        calc(20px + var(--safe-right))
+        calc(34px + var(--safe-bottom))
+        calc(20px + var(--safe-left));
+      background: linear-gradient(to top, rgba(0,0,0,.50), rgba(0,0,0,0) 40%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .55s ease;
+    }
+
+    .final-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .form-button {
+      width: min(100%, 390px);
+      min-height: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 24px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      font-weight: 650;
+      font-size: 17px;
+      letter-spacing: .01em;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, .26);
+      transition: transform .15s ease, background .15s ease;
+    }
+
+    .form-button:active {
+      transform: scale(.985);
+      background: #fff;
+    }
+
+    /* On wider screens, preserve the phone-style composition instead of
+       stretching the portrait video across a desktop monitor. */
+    @media (min-aspect-ratio: 3/4) and (min-width: 700px) {
+      .page {
+        width: min(100vw, 540px);
+        margin: 0 auto;
+        box-shadow: 0 0 70px rgba(0, 0, 0, .55);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sound-button,
+      .play-wrap,
+      .final-overlay,
+      .form-button { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="video-shell">
+      <video
+        id="saveTheDateVideo"
+        autoplay
+        muted
+        playsinline
+        webkit-playsinline
+        preload="auto"
+        aria-label="Save the date video"
+      >
+        <source src="assets/save-the-date.mp4" type="video/mp4" />
+        Your browser does not support embedded video.
+      </video>
+    </div>
+
+    <button id="soundButton" class="sound-button" type="button" aria-label="Restart video with sound">
+      🔊 Tap for sound
+    </button>
+
+    <div id="playWrap" class="play-wrap" aria-hidden="true">
+      <button id="playButton" class="play-button" type="button" aria-label="Play video">▶</button>
+    </div>
+
+    <div id="finalOverlay" class="final-overlay" aria-hidden="true">
+      <a
+        class="form-button"
+        href="https://fillio.so/r/vyB8kbQwUFdZ"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open the information form
+      </a>
+    </div>
+  </main>
+
+  <script>
+    const video = document.getElementById('saveTheDateVideo');
+    const soundButton = document.getElementById('soundButton');
+    const playWrap = document.getElementById('playWrap');
+    const playButton = document.getElementById('playButton');
+    const finalOverlay = document.getElementById('finalOverlay');
+
+    let finalShown = false;
+
+    function showSoundButton() {
+      if (!finalShown && video.muted) soundButton.classList.add('visible');
+    }
+
+    function hideSoundButton() {
+      soundButton.classList.remove('visible');
+    }
+
+    function showPlayFallback() {
+      playWrap.classList.add('visible');
+      playWrap.setAttribute('aria-hidden', 'false');
+    }
+
+    function hidePlayFallback() {
+      playWrap.classList.remove('visible');
+      playWrap.setAttribute('aria-hidden', 'true');
+    }
+
+    function showFinalButton() {
+      if (finalShown) return;
+      finalShown = true;
+      hideSoundButton();
+      hidePlayFallback();
+      finalOverlay.classList.add('visible');
+      finalOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    // Autoplay muted is the most reliable option on iPhone and Android.
+    // If autoplay is blocked, show a clear manual play button.
+    window.addEventListener('load', async () => {
+      try {
+        await video.play();
+        window.setTimeout(showSoundButton, 700);
+      } catch (error) {
+        showPlayFallback();
+      }
+    });
+
+    // Restart from the beginning with sound after a user gesture.
+    soundButton.addEventListener('click', async () => {
+      finalShown = false;
+      finalOverlay.classList.remove('visible');
+      finalOverlay.setAttribute('aria-hidden', 'true');
+      video.currentTime = 0;
+      video.muted = false;
+      hideSoundButton();
+      try {
+        await video.play();
+      } catch (error) {
+        showPlayFallback();
+      }
+    });
+
+    playButton.addEventListener('click', async () => {
+      hidePlayFallback();
+      // A direct tap usually allows sound playback.
+      video.muted = false;
+      try {
+        await video.play();
+      } catch (error) {
+        video.muted = true;
+        try {
+          await video.play();
+          showSoundButton();
+        } catch (_) {
+          showPlayFallback();
+        }
+      }
+    });
+
+    // Freeze on the last frame and reveal the form button over the video.
+    video.addEventListener('timeupdate', () => {
+      if (!Number.isFinite(video.duration) || finalShown) return;
+      if (video.duration - video.currentTime <= 0.18) {
+        video.pause();
+        showFinalButton();
+      }
+    });
+
+    video.addEventListener('ended', showFinalButton);
+  </script>
+</body>
+</html>
